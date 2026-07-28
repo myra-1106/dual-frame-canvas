@@ -116,7 +116,7 @@ h1 {
 #stage {
   position: relative;
   width: 100%;
-  aspect-ratio: 1;
+  aspect-ratio: 655 / 648;
   overflow: hidden;
   background: #ffffff;
   touch-action: none;

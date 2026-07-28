@@ -1,5 +1,6 @@
-export const CANVAS_WIDTH = 648;
+export const CANVAS_WIDTH = 655;
 export const CANVAS_HEIGHT = 648;
+const SAFE_MARGIN = 3;
 
 export function getSlots(
   gap,
@@ -10,14 +11,16 @@ export function getSlots(
 ) {
   const safeGap = Math.min(40, Math.max(0, Number(gap) || 0));
   const aspectRatios = imageSizes.map(({ width, height }) => width / height);
+  const innerWidth = CANVAS_WIDTH - SAFE_MARGIN * 2;
+  const innerHeight = CANVAS_HEIGHT - SAFE_MARGIN * 2;
   const height = Math.min(
-    CANVAS_HEIGHT,
-    (CANVAS_WIDTH - safeGap) / (aspectRatios[0] + aspectRatios[1]),
+    innerHeight,
+    (innerWidth - safeGap) / (aspectRatios[0] + aspectRatios[1]),
   );
   const widths = aspectRatios.map((aspectRatio) => height * aspectRatio);
   const groupWidth = widths[0] + safeGap + widths[1];
-  const startX = (CANVAS_WIDTH - groupWidth) / 2;
-  const y = (CANVAS_HEIGHT - height) / 2;
+  const startX = SAFE_MARGIN + (innerWidth - groupWidth) / 2;
+  const y = SAFE_MARGIN + (innerHeight - height) / 2;
 
   return [
     { x: startX, y, width: widths[0], height },

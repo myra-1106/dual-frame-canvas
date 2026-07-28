@@ -5,8 +5,8 @@ import {
   getCoverState,
   getSlots,
   zoomAtPoint,
-} from "./src/geometry.js?v=4";
-import { decodeDataUrl } from "./src/export.js?v=4";
+} from "./src/geometry.js?v=5";
+import { decodeDataUrl } from "./src/export.js?v=5";
 
 const canvas = document.querySelector("#render-canvas");
 const context = canvas.getContext("2d");
@@ -112,12 +112,12 @@ function drawCanvas(targetContext, showSelection = true) {
     const selectedSlot = slots[editor.selected];
     targetContext.save();
     targetContext.strokeStyle = "#0071e3";
-    targetContext.lineWidth = 4;
+    targetContext.lineWidth = 2;
     targetContext.strokeRect(
-      selectedSlot.x + 2,
-      selectedSlot.y + 2,
-      selectedSlot.width - 4,
-      selectedSlot.height - 4,
+      selectedSlot.x - 2,
+      selectedSlot.y - 2,
+      selectedSlot.width + 4,
+      selectedSlot.height + 4,
     );
     targetContext.restore();
   }
@@ -360,7 +360,7 @@ function showToast(message) {
 function downloadJpg(dataUrl) {
   const link = document.createElement("a");
   link.href = dataUrl;
-  link.download = "dual-frame-1296x1296.jpg";
+  link.download = "dual-frame-1310x1296.jpg";
   document.body.append(link);
   link.click();
   link.remove();
@@ -378,7 +378,7 @@ function exportJpg() {
 
     const dataUrl = exportCanvas.toDataURL("image/jpeg", 0.98);
     const { mimeType, bytes } = decodeDataUrl(dataUrl);
-    const file = new File([bytes], "dual-frame-1296x1296.jpg", {
+    const file = new File([bytes], "dual-frame-1310x1296.jpg", {
       type: mimeType,
     });
 
