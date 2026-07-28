@@ -9,7 +9,7 @@
       content="在浏览器中将两张图片拼接为一张高清 JPG。"
     />
     <title>双图拼接画布</title>
-    <link rel="stylesheet" href="./styles.css?v=3" />
+    <link rel="stylesheet" href="./styles.css?v=4" />
   </head>
   <body>
     <main class="app-shell">
@@ -31,9 +31,9 @@
             <div id="stage">
               <canvas
                 id="render-canvas"
-                width="680"
+                width="648"
                 height="648"
-                aria-label="680 × 648 双图画布"
+                aria-label="648 × 648 正方形双图画布"
               ></canvas>
               <button class="drop-zone" id="left-drop-zone" type="button">
                 <span class="upload-icon" aria-hidden="true">＋</span>
@@ -48,7 +48,7 @@
             </div>
           </div>
           <div class="canvas-meta">
-            <span><i class="status-dot"></i>680 × 648 px</span>
+            <span><i class="status-dot"></i>648 × 648 px</span>
             <span>高清 JPG · 2×</span>
           </div>
         </div>
@@ -127,6 +127,6 @@
       <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
     </main>
 
-    <script type="module" src="./app.js?v=3"></script>
+    <script type="module" src="./app.js?v=4"></script>
   </body>
 </html>

@@ -5,8 +5,8 @@ import {
   getCoverState,
   getSlots,
   zoomAtPoint,
-} from "./src/geometry.js?v=3";
-import { decodeDataUrl } from "./src/export.js?v=3";
+} from "./src/geometry.js?v=4";
+import { decodeDataUrl } from "./src/export.js?v=4";
 
 const canvas = document.querySelector("#render-canvas");
 const context = canvas.getContext("2d");
@@ -360,7 +360,7 @@ function showToast(message) {
 function downloadJpg(dataUrl) {
   const link = document.createElement("a");
   link.href = dataUrl;
-  link.download = "dual-frame-1360x1296.jpg";
+  link.download = "dual-frame-1296x1296.jpg";
   document.body.append(link);
   link.click();
   link.remove();
@@ -378,7 +378,7 @@ function exportJpg() {
 
     const dataUrl = exportCanvas.toDataURL("image/jpeg", 0.98);
     const { mimeType, bytes } = decodeDataUrl(dataUrl);
-    const file = new File([bytes], "dual-frame-1360x1296.jpg", {
+    const file = new File([bytes], "dual-frame-1296x1296.jpg", {
       type: mimeType,
     });
 

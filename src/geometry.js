@@ -1,4 +1,4 @@
-export const CANVAS_WIDTH = 680;
+export const CANVAS_WIDTH = 648;
 export const CANVAS_HEIGHT = 648;
 
 export function getSlots(

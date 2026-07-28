@@ -23,6 +23,6 @@ test("页面提供完整编辑控件", async () => {
 
   assert.match(
     html,
-    /<canvas[\s\S]*?width="680"[\s\S]*?height="648"[\s\S]*?<\/canvas>/,
+    /<canvas[\s\S]*?width="648"[\s\S]*?height="648"[\s\S]*?<\/canvas>/,
   );
 });

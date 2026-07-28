@@ -7,13 +7,13 @@ import {
   zoomAtPoint,
 } from "../src/geometry.js";
 
-test("680px 画布让两张竖图保持原尺寸并以 10px 间距紧凑居中", () => {
+test("正方形画布让两张竖图以 10px 间距紧凑居中", () => {
   assert.deepEqual(getSlots(10, [
     { width: 1000, height: 2000 },
     { width: 1000, height: 2000 },
   ]), [
-    { x: 11, y: 0, width: 324, height: 648 },
-    { x: 345, y: 0, width: 324, height: 648 },
+    { x: 0, y: 5, width: 319, height: 638 },
+    { x: 329, y: 5, width: 319, height: 638 },
   ]);
 });
 
@@ -22,8 +22,8 @@ test("宽图随可用宽度缩小并保持完整比例", () => {
     { width: 2000, height: 1000 },
     { width: 2000, height: 1000 },
   ]), [
-    { x: 0, y: 240.25, width: 335, height: 167.5 },
-    { x: 345, y: 240.25, width: 335, height: 167.5 },
+    { x: 0, y: 244.25, width: 319, height: 159.5 },
+    { x: 329, y: 244.25, width: 319, height: 159.5 },
   ]);
 });
 
@@ -32,8 +32,8 @@ test("间距被约束在 0 到 40", () => {
     { width: 2000, height: 1000 },
     { width: 2000, height: 1000 },
   ];
-  assert.equal(getSlots(-1, sizes)[0].width, 340);
-  assert.equal(getSlots(50, sizes)[0].width, 320);
+  assert.equal(getSlots(-1, sizes)[0].width, 324);
+  assert.equal(getSlots(50, sizes)[0].width, 304);
 });
 
 test("竖图初始状态覆盖区域并居中", () => {
