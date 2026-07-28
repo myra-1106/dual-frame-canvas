@@ -116,7 +116,7 @@ h1 {
 #stage {
   position: relative;
   width: 100%;
-  aspect-ratio: 1055 / 648;
+  aspect-ratio: 680 / 648;
   overflow: hidden;
   background: #ffffff;
   touch-action: none;
@@ -393,6 +393,31 @@ input:disabled {
   font-size: 12px;
   line-height: 1.5;
   text-align: center;
+}
+
+.toast {
+  position: fixed;
+  z-index: 50;
+  right: 20px;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  left: 20px;
+  width: fit-content;
+  max-width: min(420px, calc(100vw - 40px));
+  margin: auto;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: rgba(29, 29, 31, 0.92);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.toast[hidden] {
+  display: none;
 }
 
 .status-message {

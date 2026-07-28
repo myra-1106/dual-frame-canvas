@@ -6,6 +6,7 @@ import {
   getSlots,
   zoomAtPoint,
 } from "./src/geometry.js";
+import { decodeDataUrl } from "./src/export.js";
 
 const canvas = document.querySelector("#render-canvas");
 const context = canvas.getContext("2d");
@@ -24,6 +25,7 @@ const offsetXInput = document.querySelector("#offset-x");
 const offsetYInput = document.querySelector("#offset-y");
 const imageControls = [scaleInput, offsetXInput, offsetYInput];
 const status = document.querySelector("#status");
+const toast = document.querySelector("#toast");
 
 const editor = {
   gap: 10,
@@ -76,26 +78,26 @@ function sideAtPoint(point) {
   return point.x < CANVAS_WIDTH / 2 ? 0 : 1;
 }
 
-function render(showSelection = true) {
+function drawCanvas(targetContext, showSelection = true) {
   const slots = getCurrentSlots();
-  context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-  context.fillStyle = "#ffffff";
-  context.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  targetContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  targetContext.fillStyle = "#ffffff";
+  targetContext.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
   slots.forEach((slot, index) => {
     const item = editor.images[index];
-    context.save();
-    context.beginPath();
-    context.rect(slot.x, slot.y, slot.width, slot.height);
-    context.clip();
-    context.fillStyle = "#f3f3f5";
-    context.fillRect(slot.x, slot.y, slot.width, slot.height);
+    targetContext.save();
+    targetContext.beginPath();
+    targetContext.rect(slot.x, slot.y, slot.width, slot.height);
+    targetContext.clip();
+    targetContext.fillStyle = "#f3f3f5";
+    targetContext.fillRect(slot.x, slot.y, slot.width, slot.height);
 
     if (item.image) {
       const size = imageSize(item);
-      context.imageSmoothingEnabled = true;
-      context.imageSmoothingQuality = "high";
-      context.drawImage(
+      targetContext.imageSmoothingEnabled = true;
+      targetContext.imageSmoothingQuality = "high";
+      targetContext.drawImage(
         item.image,
         item.x,
         item.y,
@@ -103,23 +105,27 @@ function render(showSelection = true) {
         size.height * item.scale,
       );
     }
-    context.restore();
+    targetContext.restore();
   });
 
   if (showSelection) {
     const selectedSlot = slots[editor.selected];
-    context.save();
-    context.strokeStyle = "#0071e3";
-    context.lineWidth = 4;
-    context.strokeRect(
+    targetContext.save();
+    targetContext.strokeStyle = "#0071e3";
+    targetContext.lineWidth = 4;
+    targetContext.strokeRect(
       selectedSlot.x + 2,
       selectedSlot.y + 2,
       selectedSlot.width - 4,
       selectedSlot.height - 4,
     );
-    context.restore();
+    targetContext.restore();
   }
+}
 
+function render(showSelection = true) {
+  drawCanvas(context, showSelection);
+  const slots = getCurrentSlots();
   updateDropZones(slots);
 }
 
@@ -340,19 +346,59 @@ function resetEditor() {
   render();
 }
 
-function exportPng() {
-  render(false);
+let toastTimer;
+
+function showToast(message) {
+  toast.textContent = message;
+  toast.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.hidden = true;
+  }, 3200);
+}
+
+function downloadJpg(dataUrl) {
+  const link = document.createElement("a");
+  link.href = dataUrl;
+  link.download = "dual-frame-1360x1296.jpg";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  showToast("高清 JPG 已开始下载");
+}
+
+function exportJpg() {
   try {
-    const link = document.createElement("a");
-    link.href = canvas.toDataURL("image/png");
-    link.download = "dual-frame-1055x648.png";
-    document.body.append(link);
-    link.click();
-    link.remove();
+    const exportCanvas = document.createElement("canvas");
+    exportCanvas.width = CANVAS_WIDTH * 2;
+    exportCanvas.height = CANVAS_HEIGHT * 2;
+    const exportContext = exportCanvas.getContext("2d");
+    exportContext.scale(2, 2);
+    drawCanvas(exportContext, false);
+
+    const dataUrl = exportCanvas.toDataURL("image/jpeg", 0.98);
+    const { mimeType, bytes } = decodeDataUrl(dataUrl);
+    const file = new File([bytes], "dual-frame-1360x1296.jpg", {
+      type: mimeType,
+    });
+
+    if (navigator.canShare?.({ files: [file] })) {
+      showToast("正在打开系统保存面板…");
+      navigator
+        .share({
+          files: [file],
+          title: "双图拼接画布",
+        })
+        .catch((error) => {
+          if (error.name !== "AbortError") downloadJpg(dataUrl);
+        });
+      return;
+    }
+
+    downloadJpg(dataUrl);
   } catch {
-    status.textContent = "导出失败，请稍后再试。";
-  } finally {
-    render();
+    status.textContent = "导出失败，请刷新页面后再试。";
+    showToast("导出失败，请刷新页面后再试");
   }
 }
 
@@ -480,7 +526,7 @@ offsetXInput.addEventListener("input", () => setOffset("x", offsetXInput.value))
 offsetYInput.addEventListener("input", () => setOffset("y", offsetYInput.value));
 document.querySelector("#swap-button").addEventListener("click", swapImages);
 document.querySelector("#reset-button").addEventListener("click", resetEditor);
-document.querySelector("#export-button").addEventListener("click", exportPng);
+document.querySelector("#export-button").addEventListener("click", exportJpg);
 
 syncControls();
 render();
