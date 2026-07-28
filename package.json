@@ -1,0 +1,11 @@
+{
+  "name": "dual-frame-canvas",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes serve .",
+    "test": "node --test",
+    "check": "node --check src/geometry.js && node --check app.js"
+  }
+}
