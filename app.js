@@ -5,8 +5,8 @@ import {
   getCoverState,
   getSlots,
   zoomAtPoint,
-} from "./src/geometry.js?v=5";
-import { decodeDataUrl } from "./src/export.js?v=5";
+} from "./src/geometry.js?v=7";
+import { decodeDataUrl } from "./src/export.js?v=7";
 
 const canvas = document.querySelector("#render-canvas");
 const context = canvas.getContext("2d");
@@ -19,6 +19,7 @@ const dropZones = [
   document.querySelector("#left-drop-zone"),
   document.querySelector("#right-drop-zone"),
 ];
+const canvasWidthInput = document.querySelector("#canvas-width");
 const gapInput = document.querySelector("#gap");
 const scaleInput = document.querySelector("#scale");
 const offsetXInput = document.querySelector("#offset-x");
@@ -28,6 +29,7 @@ const status = document.querySelector("#status");
 const toast = document.querySelector("#toast");
 
 const editor = {
+  canvasWidth: CANVAS_WIDTH,
   gap: 10,
   selected: 0,
   images: [emptyImageState(), emptyImageState()],
@@ -54,8 +56,8 @@ function getLayoutSizes() {
   );
 }
 
-function getCurrentSlots(gap = editor.gap) {
-  return getSlots(gap, getLayoutSizes());
+function getCurrentSlots(gap = editor.gap, canvasWidth = editor.canvasWidth) {
+  return getSlots(gap, getLayoutSizes(), canvasWidth);
 }
 
 function getMinimumScale(item, slot) {
@@ -66,7 +68,7 @@ function getMinimumScale(item, slot) {
 function getPoint(event) {
   const rect = canvas.getBoundingClientRect();
   return {
-    x: (event.clientX - rect.left) * (CANVAS_WIDTH / rect.width),
+    x: (event.clientX - rect.left) * (editor.canvasWidth / rect.width),
     y: (event.clientY - rect.top) * (CANVAS_HEIGHT / rect.height),
   };
 }
@@ -75,14 +77,14 @@ function sideAtPoint(point) {
   const slots = getCurrentSlots();
   if (point.x <= slots[0].x + slots[0].width) return 0;
   if (point.x >= slots[1].x) return 1;
-  return point.x < CANVAS_WIDTH / 2 ? 0 : 1;
+  return point.x < editor.canvasWidth / 2 ? 0 : 1;
 }
 
 function drawCanvas(targetContext, showSelection = true) {
   const slots = getCurrentSlots();
-  targetContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  targetContext.clearRect(0, 0, editor.canvasWidth, CANVAS_HEIGHT);
   targetContext.fillStyle = "#ffffff";
-  targetContext.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  targetContext.fillRect(0, 0, editor.canvasWidth, CANVAS_HEIGHT);
 
   slots.forEach((slot, index) => {
     const item = editor.images[index];
@@ -132,8 +134,8 @@ function render(showSelection = true) {
 function updateDropZones(slots) {
   dropZones.forEach((zone, index) => {
     const slot = slots[index];
-    zone.style.left = `${(slot.x / CANVAS_WIDTH) * 100}%`;
-    zone.style.width = `${(slot.width / CANVAS_WIDTH) * 100}%`;
+    zone.style.left = `${(slot.x / editor.canvasWidth) * 100}%`;
+    zone.style.width = `${(slot.width / editor.canvasWidth) * 100}%`;
     zone.hidden = Boolean(editor.images[index].image);
   });
 }
@@ -183,6 +185,10 @@ function syncControls() {
   document.querySelector("#offset-x-value").value = offsetXInput.value;
   document.querySelector("#offset-y-value").value = offsetYInput.value;
   document.querySelector("#gap-value").value = `${editor.gap}px`;
+  document.querySelector("#canvas-width-value").value =
+    `${editor.canvasWidth}px`;
+  document.querySelector("#canvas-size-label").lastChild.textContent =
+    `${editor.canvasWidth} × 648 px`;
 }
 
 async function decodeImage(file) {
@@ -310,6 +316,22 @@ function changeGap(nextGap) {
   render();
 }
 
+function changeCanvasWidth(nextWidth) {
+  const width = Math.min(1055, Math.max(655, Number(nextWidth)));
+  const shiftX = (width - editor.canvasWidth) / 2;
+
+  editor.images.forEach((item) => {
+    if (item.image) item.x += shiftX;
+  });
+  editor.canvasWidth = width;
+  canvas.width = width;
+  stage.style.aspectRatio = `${width} / ${CANVAS_HEIGHT}`;
+  canvasWidthInput.value = String(width);
+  canvas.setAttribute("aria-label", `${width} × 648 双图画布`);
+  syncControls();
+  render();
+}
+
 function swapImages() {
   const oldSlots = getCurrentSlots();
   [editor.images[0], editor.images[1]] = [editor.images[1], editor.images[0]];
@@ -333,6 +355,7 @@ function swapImages() {
 }
 
 function resetEditor() {
+  changeCanvasWidth(CANVAS_WIDTH);
   editor.gap = 10;
   gapInput.value = "10";
   const slots = getCurrentSlots(10);
@@ -358,9 +381,10 @@ function showToast(message) {
 }
 
 function downloadJpg(dataUrl) {
+  const exportWidth = editor.canvasWidth * 2;
   const link = document.createElement("a");
   link.href = dataUrl;
-  link.download = "dual-frame-1310x1296.jpg";
+  link.download = `dual-frame-${exportWidth}x1296.jpg`;
   document.body.append(link);
   link.click();
   link.remove();
@@ -370,7 +394,7 @@ function downloadJpg(dataUrl) {
 function exportJpg() {
   try {
     const exportCanvas = document.createElement("canvas");
-    exportCanvas.width = CANVAS_WIDTH * 2;
+    exportCanvas.width = editor.canvasWidth * 2;
     exportCanvas.height = CANVAS_HEIGHT * 2;
     const exportContext = exportCanvas.getContext("2d");
     exportContext.scale(2, 2);
@@ -378,9 +402,13 @@ function exportJpg() {
 
     const dataUrl = exportCanvas.toDataURL("image/jpeg", 0.98);
     const { mimeType, bytes } = decodeDataUrl(dataUrl);
-    const file = new File([bytes], "dual-frame-1310x1296.jpg", {
+    const file = new File(
+      [bytes],
+      `dual-frame-${editor.canvasWidth * 2}x1296.jpg`,
+      {
       type: mimeType,
-    });
+      },
+    );
 
     if (navigator.canShare?.({ files: [file] })) {
       showToast("正在打开系统保存面板…");
@@ -520,6 +548,9 @@ canvas.addEventListener(
   { passive: false },
 );
 
+canvasWidthInput.addEventListener("input", () =>
+  changeCanvasWidth(canvasWidthInput.value),
+);
 gapInput.addEventListener("input", () => changeGap(gapInput.value));
 scaleInput.addEventListener("input", () => setScale(Number(scaleInput.value)));
 offsetXInput.addEventListener("input", () => setOffset("x", offsetXInput.value));

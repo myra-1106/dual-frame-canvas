@@ -9,7 +9,7 @@
       content="在浏览器中将两张图片拼接为一张高清 JPG。"
     />
     <title>双图拼接画布</title>
-    <link rel="stylesheet" href="./styles.css?v=5" />
+    <link rel="stylesheet" href="./styles.css?v=7" />
   </head>
   <body>
     <main class="app-shell">
@@ -31,9 +31,9 @@
             <div id="stage">
               <canvas
                 id="render-canvas"
-                width="655"
+                width="855"
                 height="648"
-                aria-label="655 × 648 双图画布"
+                aria-label="可调宽度双图画布"
               ></canvas>
               <button class="drop-zone" id="left-drop-zone" type="button">
                 <span class="upload-icon" aria-hidden="true">＋</span>
@@ -48,7 +48,7 @@
             </div>
           </div>
           <div class="canvas-meta">
-            <span><i class="status-dot"></i>655 × 648 px</span>
+            <span id="canvas-size-label"><i class="status-dot"></i>855 × 648 px</span>
             <span>高清 JPG · 2×</span>
           </div>
         </div>
@@ -72,6 +72,14 @@
             <button class="button button-secondary" data-replace="1" type="button">
               选择右图
             </button>
+          </div>
+
+          <div class="control-group">
+            <label for="canvas-width">
+              <span>画布宽度</span>
+              <output id="canvas-width-value" for="canvas-width">855px</output>
+            </label>
+            <input id="canvas-width" type="range" min="655" max="1055" value="855" />
           </div>
 
           <div class="control-group">
@@ -127,6 +135,6 @@
       <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
     </main>
 
-    <script type="module" src="./app.js?v=5"></script>
+    <script type="module" src="./app.js?v=7"></script>
   </body>
 </html>

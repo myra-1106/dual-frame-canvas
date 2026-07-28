@@ -7,13 +7,23 @@ import {
   zoomAtPoint,
 } from "../src/geometry.js";
 
-test("655px 画布为两张竖图保留安全边距且不裁切", () => {
-  assert.deepEqual(getSlots(10, [
+test("画布宽度只改变左右外边距，不改变图片尺寸和相对位置", () => {
+  const sizes = [
     { width: 1000, height: 2000 },
     { width: 1000, height: 2000 },
-  ]), [
-    { x: 3, y: 4.5, width: 319.5, height: 639 },
-    { x: 332.5, y: 4.5, width: 319.5, height: 639 },
+  ];
+
+  assert.deepEqual(getSlots(10, sizes, 655), [
+    { x: 8, y: 9.5, width: 314.5, height: 629 },
+    { x: 332.5, y: 9.5, width: 314.5, height: 629 },
+  ]);
+  assert.deepEqual(getSlots(10, sizes, 855), [
+    { x: 108, y: 9.5, width: 314.5, height: 629 },
+    { x: 432.5, y: 9.5, width: 314.5, height: 629 },
+  ]);
+  assert.deepEqual(getSlots(10, sizes, 1055), [
+    { x: 208, y: 9.5, width: 314.5, height: 629 },
+    { x: 532.5, y: 9.5, width: 314.5, height: 629 },
   ]);
 });
 
@@ -21,9 +31,9 @@ test("宽图随可用宽度缩小并保持完整比例", () => {
   assert.deepEqual(getSlots(10, [
     { width: 2000, height: 1000 },
     { width: 2000, height: 1000 },
-  ]), [
-    { x: 3, y: 244.125, width: 319.5, height: 159.75 },
-    { x: 332.5, y: 244.125, width: 319.5, height: 159.75 },
+  ], 855), [
+    { x: 108, y: 245.375, width: 314.5, height: 157.25 },
+    { x: 432.5, y: 245.375, width: 314.5, height: 157.25 },
   ]);
 });
 
@@ -32,8 +42,8 @@ test("间距被约束在 0 到 40", () => {
     { width: 2000, height: 1000 },
     { width: 2000, height: 1000 },
   ];
-  assert.equal(getSlots(-1, sizes)[0].width, 324.5);
-  assert.equal(getSlots(50, sizes)[0].width, 304.5);
+  assert.equal(getSlots(-1, sizes, 855)[0].width, 319.5);
+  assert.equal(getSlots(50, sizes, 855)[0].width, 299.5);
 });
 
 test("竖图初始状态覆盖区域并居中", () => {
