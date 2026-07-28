@@ -26,4 +26,5 @@ test("页面提供完整编辑控件", async () => {
     html,
     /<canvas[\s\S]*?width="855"[\s\S]*?height="648"[\s\S]*?<\/canvas>/,
   );
+  assert.match(html, /无损 PNG · 4×/);
 });

@@ -5,8 +5,8 @@ import {
   getCoverState,
   getSlots,
   zoomAtPoint,
-} from "./src/geometry.js?v=7";
-import { decodeDataUrl } from "./src/export.js?v=7";
+} from "./src/geometry.js?v=8";
+import { decodeDataUrl, getExportSpec } from "./src/export.js?v=8";
 
 const canvas = document.querySelector("#render-canvas");
 const context = canvas.getContext("2d");
@@ -380,35 +380,31 @@ function showToast(message) {
   }, 3200);
 }
 
-function downloadJpg(dataUrl) {
-  const exportWidth = editor.canvasWidth * 2;
+function downloadPng(dataUrl, fileName) {
   const link = document.createElement("a");
   link.href = dataUrl;
-  link.download = `dual-frame-${exportWidth}x1296.jpg`;
+  link.download = fileName;
   document.body.append(link);
   link.click();
   link.remove();
-  showToast("高清 JPG 已开始下载");
+  showToast("无损 PNG 已开始下载");
 }
 
-function exportJpg() {
+function exportPng() {
   try {
+    const spec = getExportSpec(editor.canvasWidth, CANVAS_HEIGHT);
     const exportCanvas = document.createElement("canvas");
-    exportCanvas.width = editor.canvasWidth * 2;
-    exportCanvas.height = CANVAS_HEIGHT * 2;
+    exportCanvas.width = spec.width;
+    exportCanvas.height = spec.height;
     const exportContext = exportCanvas.getContext("2d");
-    exportContext.scale(2, 2);
+    exportContext.scale(4, 4);
     drawCanvas(exportContext, false);
 
-    const dataUrl = exportCanvas.toDataURL("image/jpeg", 0.98);
+    const dataUrl = exportCanvas.toDataURL(spec.mimeType);
     const { mimeType, bytes } = decodeDataUrl(dataUrl);
-    const file = new File(
-      [bytes],
-      `dual-frame-${editor.canvasWidth * 2}x1296.jpg`,
-      {
+    const file = new File([bytes], spec.fileName, {
       type: mimeType,
-      },
-    );
+    });
 
     if (navigator.canShare?.({ files: [file] })) {
       showToast("正在打开系统保存面板…");
@@ -418,12 +414,12 @@ function exportJpg() {
           title: "双图拼接画布",
         })
         .catch((error) => {
-          if (error.name !== "AbortError") downloadJpg(dataUrl);
+          if (error.name !== "AbortError") downloadPng(dataUrl, spec.fileName);
         });
       return;
     }
 
-    downloadJpg(dataUrl);
+    downloadPng(dataUrl, spec.fileName);
   } catch {
     status.textContent = "导出失败，请刷新页面后再试。";
     showToast("导出失败，请刷新页面后再试");
@@ -557,7 +553,7 @@ offsetXInput.addEventListener("input", () => setOffset("x", offsetXInput.value))
 offsetYInput.addEventListener("input", () => setOffset("y", offsetYInput.value));
 document.querySelector("#swap-button").addEventListener("click", swapImages);
 document.querySelector("#reset-button").addEventListener("click", resetEditor);
-document.querySelector("#export-button").addEventListener("click", exportJpg);
+document.querySelector("#export-button").addEventListener("click", exportPng);
 
 syncControls();
 render();

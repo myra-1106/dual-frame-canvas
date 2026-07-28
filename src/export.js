@@ -10,3 +10,15 @@ export function decodeDataUrl(dataUrl) {
 
   return { mimeType, bytes };
 }
+
+export function getExportSpec(canvasWidth, canvasHeight = 648, multiplier = 4) {
+  const width = canvasWidth * multiplier;
+  const height = canvasHeight * multiplier;
+
+  return {
+    width,
+    height,
+    mimeType: "image/png",
+    fileName: `dual-frame-${width}x${height}.png`,
+  };
+}

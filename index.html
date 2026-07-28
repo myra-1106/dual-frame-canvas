@@ -6,10 +6,10 @@
     <meta name="theme-color" content="#f5f5f7" />
     <meta
       name="description"
-      content="在浏览器中将两张图片拼接为一张高清 JPG。"
+      content="在浏览器中将两张图片拼接为一张无损高清 PNG。"
     />
     <title>双图拼接画布</title>
-    <link rel="stylesheet" href="./styles.css?v=7" />
+    <link rel="stylesheet" href="./styles.css?v=8" />
   </head>
   <body>
     <main class="app-shell">
@@ -21,7 +21,7 @@
         </div>
         <button class="button button-primary header-export" id="export-button" type="button">
           <span aria-hidden="true">↓</span>
-          导出高清 JPG
+          导出无损 PNG
         </button>
       </header>
 
@@ -49,7 +49,7 @@
           </div>
           <div class="canvas-meta">
             <span id="canvas-size-label"><i class="status-dot"></i>855 × 648 px</span>
-            <span>高清 JPG · 2×</span>
+            <span>无损 PNG · 4×</span>
           </div>
         </div>
 
@@ -135,6 +135,6 @@
       <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
     </main>
 
-    <script type="module" src="./app.js?v=7"></script>
+    <script type="module" src="./app.js?v=8"></script>
   </body>
 </html>
