@@ -1,5 +1,5 @@
 export const MIN_CANVAS_WIDTH = 655;
-export const CANVAS_WIDTH = 855;
+export const CANVAS_WIDTH = 655;
 export const MAX_CANVAS_WIDTH = 1055;
 export const CANVAS_HEIGHT = 648;
 const SAFE_MARGIN_X = 8;
