@@ -407,6 +407,14 @@ function isTouchDevice() {
   );
 }
 
+function clearImages() {
+  editor.images[0] = { image: null, fileName: "", scale: 1, x: 0, y: 0 };
+  editor.images[1] = { image: null, fileName: "", scale: 1, x: 0, y: 0 };
+  status.textContent = "";
+  syncControls();
+  render();
+}
+
 function exportPng() {
   try {
     const spec = getExportSpec(editor.canvasWidth, CANVAS_HEIGHT);
@@ -422,6 +430,7 @@ function exportPng() {
     // 桌面端：直接触发浏览器下载
     if (!isTouchDevice()) {
       downloadPng(dataUrl, spec.fileName);
+      clearImages();
       return;
     }
 
@@ -438,11 +447,13 @@ function exportPng() {
         })
         .catch((error) => {
           if (error.name !== "AbortError") downloadPng(dataUrl, spec.fileName);
-        });
+        })
+        .finally(() => clearImages());
       return;
     }
 
     downloadPng(dataUrl, spec.fileName);
+    clearImages();
   } catch {
     status.textContent = "导出失败，请刷新页面后再试。";
     showToast("导出失败，请刷新页面后再试");
