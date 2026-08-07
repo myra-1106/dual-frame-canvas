@@ -167,7 +167,7 @@
               <div class="rz-format-tab" data-format="image/png">PNG</div>
             </div>
             <div class="rz-control-row" id="rz-quality-row">
-              <label>质量</label>
+              <label id="rz-quality-label">质量</label>
               <input type="range" id="rz-quality-slider" min="5" max="100" value="85" />
               <input type="number" id="rz-quality-input" min="5" max="100" value="85" />
             </div>
@@ -210,6 +210,7 @@
       const qualityRow   = z("rz-quality-row");
       const qualitySlider = z("rz-quality-slider");
       const qualityInput  = z("rz-quality-input");
+      const qualityLabel  = z("rz-quality-label");
       const estimatedSize = z("rz-estimated-size");
       const compareText   = z("rz-compare-text");
       const sizeBarFill   = z("rz-size-bar-fill");
@@ -224,7 +225,13 @@
           formatTabs.forEach(function (t) { t.classList.remove("rz-active"); });
           tab.classList.add("rz-active");
           outputFormat = tab.dataset.format;
-          qualityRow.style.display = outputFormat === "image/png" ? "none" : "";
+          if (outputFormat === "image/png") {
+            qualityLabel.textContent = "精度";
+            qualityRow.style.display = "";
+          } else {
+            qualityLabel.textContent = "质量";
+            qualityRow.style.display = "";
+          }
           updateEstimate();
         });
       });
@@ -242,28 +249,52 @@
 
       function updateEstimate() {
         if (!imageObj) return;
-        var q = outputFormat === "image/png" ? 100 : Number(qualityInput.value) || 85;
+        var q = Number(qualityInput.value) || 85;
         var w = imageObj.naturalWidth, h = imageObj.naturalHeight;
         var canvas = document.createElement("canvas");
         canvas.width = w; canvas.height = h;
         var ctx = canvas.getContext("2d");
-        ctx.drawImage(imageObj, 0, 0);
-        canvas.toBlob(function (blob) {
-          if (!blob) return;
-          estimatedSize.textContent = formatBytes(blob.size);
-          var ratio = originalBytes ? Math.round((blob.size / originalBytes) * 100) : 100;
-          var diff = originalBytes ? originalBytes - blob.size : 0;
-          var diffText = diff >= 0
-            ? "−" + formatBytes(diff) + "（" + (100 - ratio) + "%）"
-            : "+" + formatBytes(-diff) + "（" + (ratio - 100) + "%）";
-          compareText.textContent = diffText;
-          compareText.className = "rz-val";
-          if (diff > 0) compareText.classList.add("rz-save");
-          else if (diff === 0) compareText.classList.add("rz-warn");
-          else compareText.classList.add("rz-large");
-          sizeBarFill.style.width = Math.min(100, ratio) + "%";
-          sizeBarFill.style.background = ratio <= 60 ? "#34c759" : ratio <= 90 ? "var(--blue)" : "#ff3b30";
-        }, outputFormat, q / 100);
+
+        if (outputFormat === "image/png") {
+          // PNG 无损 → 滑块控制内部渲染精度，精度越低文件越小
+          var scale = q / 100;
+          var sw = Math.max(1, Math.round(w * scale));
+          var sh = Math.max(1, Math.round(h * scale));
+          var small = document.createElement("canvas");
+          small.width = sw; small.height = sh;
+          var sctx = small.getContext("2d");
+          sctx.imageSmoothingEnabled = true;
+          sctx.imageSmoothingQuality = "high";
+          sctx.drawImage(imageObj, 0, 0, sw, sh);
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+          ctx.drawImage(small, 0, 0, w, h);
+          canvas.toBlob(function (blob) {
+            handleBlob(blob);
+          }, outputFormat);
+        } else {
+          ctx.drawImage(imageObj, 0, 0);
+          canvas.toBlob(function (blob) {
+            handleBlob(blob);
+          }, outputFormat, q / 100);
+        }
+      }
+
+      function handleBlob(blob) {
+        if (!blob) return;
+        estimatedSize.textContent = formatBytes(blob.size);
+        var ratio = originalBytes ? Math.round((blob.size / originalBytes) * 100) : 100;
+        var diff = originalBytes ? originalBytes - blob.size : 0;
+        var diffText = diff >= 0
+          ? "−" + formatBytes(diff) + "（" + (100 - ratio) + "%）"
+          : "+" + formatBytes(-diff) + "（" + (ratio - 100) + "%）";
+        compareText.textContent = diffText;
+        compareText.className = "rz-val";
+        if (diff > 0) compareText.classList.add("rz-save");
+        else if (diff === 0) compareText.classList.add("rz-warn");
+        else compareText.classList.add("rz-large");
+        sizeBarFill.style.width = Math.min(100, ratio) + "%";
+        sizeBarFill.style.background = ratio <= 60 ? "#34c759" : ratio <= 90 ? "var(--blue)" : "#ff3b30";
       }
 
       function formatBytes(bytes) {
@@ -289,7 +320,7 @@
             controlsCard.style.display = "";
             resetBtn.style.display = "";
             downloadBtn.disabled = false;
-            if (outputFormat === "image/png") qualityRow.style.display = "none";
+            if (outputFormat === "image/png") qualityLabel.textContent = "精度";
             updateEstimate();
           };
           img.src = e.target.result;
@@ -312,6 +343,7 @@
         sizeBarFill.style.width = "0%";
         fileInput.value = "";
         outputFormat = "image/jpeg";
+        qualityLabel.textContent = "质量";
         qualityRow.style.display = "";
         qualitySlider.value = "85";
         qualityInput.value = "85";
@@ -334,19 +366,42 @@
 
       downloadBtn.addEventListener("click", function () {
         if (!imageObj) return;
-        var q = outputFormat === "image/png" ? 100 : Number(qualityInput.value) || 85;
+        var q = Number(qualityInput.value) || 85;
+        var w = imageObj.naturalWidth, h = imageObj.naturalHeight;
         var canvas = document.createElement("canvas");
-        canvas.width = imageObj.naturalWidth; canvas.height = imageObj.naturalHeight;
+        canvas.width = w; canvas.height = h;
         var ctx = canvas.getContext("2d");
-        ctx.drawImage(imageObj, 0, 0);
-        canvas.toBlob(function (blob) {
-          var ext = outputFormat === "image/jpeg" ? "jpg" : outputFormat === "image/webp" ? "webp" : "png";
-          var url = URL.createObjectURL(blob);
-          var a = document.createElement("a");
-          a.href = url; a.download = "pixel-scale." + ext;
-          document.body.append(a); a.click();
-          setTimeout(function () { a.remove(); URL.revokeObjectURL(url); }, 120);
-        }, outputFormat, q / 100);
+        var ext = outputFormat === "image/jpeg" ? "jpg" : outputFormat === "image/webp" ? "webp" : "png";
+        var opts = outputFormat === "image/png" ? [outputFormat] : [outputFormat, q / 100];
+
+        function doDownload() {
+          canvas.toBlob(function (blob) {
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement("a");
+            a.href = url; a.download = "pixel-scale." + ext;
+            document.body.append(a); a.click();
+            setTimeout(function () { a.remove(); URL.revokeObjectURL(url); }, 120);
+          }, opts[0], opts[1]);
+        }
+
+        if (outputFormat === "image/png") {
+          var scale = q / 100;
+          var sw = Math.max(1, Math.round(w * scale));
+          var sh = Math.max(1, Math.round(h * scale));
+          var small = document.createElement("canvas");
+          small.width = sw; small.height = sh;
+          var sctx = small.getContext("2d");
+          sctx.imageSmoothingEnabled = true;
+          sctx.imageSmoothingQuality = "high";
+          sctx.drawImage(imageObj, 0, 0, sw, sh);
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+          ctx.drawImage(small, 0, 0, w, h);
+          doDownload();
+        } else {
+          ctx.drawImage(imageObj, 0, 0);
+          doDownload();
+        }
       });
 
       resetBtn.addEventListener("click", resetAll);
