@@ -5,8 +5,8 @@ import {
   getCoverState,
   getSlots,
   zoomAtPoint,
-} from "./src/geometry.js?v=10";
-import { decodeDataUrl, getExportSpec } from "./src/export.js?v=10";
+} from "./src/geometry.js?v=11";
+import { decodeDataUrl, getExportSpec } from "./src/export.js?v=11";
 
 const canvas = document.querySelector("#render-canvas");
 const context = canvas.getContext("2d");
