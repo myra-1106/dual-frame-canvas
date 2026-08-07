@@ -440,14 +440,21 @@ function exportPng() {
 
     if (navigator.canShare?.({ files: [file] })) {
       showToast("正在打开系统保存面板…");
+      let aborted = false;
       navigator
         .share({
           files: [file],
           title: "双图拼接画布",
         })
-        .then(() => clearImages())
         .catch((error) => {
-          if (error.name !== "AbortError") downloadPng(dataUrl, spec.fileName);
+          if (error.name === "AbortError") {
+            aborted = true;
+            return;
+          }
+          downloadPng(dataUrl, spec.fileName);
+        })
+        .finally(() => {
+          if (!aborted) clearImages();
         });
       return;
     }
