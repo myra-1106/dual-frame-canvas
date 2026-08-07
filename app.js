@@ -381,12 +381,18 @@ function showToast(message) {
 }
 
 function downloadPng(dataUrl, fileName) {
+  const { mimeType, bytes } = decodeDataUrl(dataUrl);
+  const blob = new Blob([bytes], { type: mimeType });
+  const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
-  link.href = dataUrl;
+  link.href = url;
   link.download = fileName;
   document.body.append(link);
   link.click();
-  link.remove();
+  setTimeout(() => {
+    link.remove();
+    URL.revokeObjectURL(url);
+  }, 120);
   showToast("无损 PNG 已开始下载");
 }
 
