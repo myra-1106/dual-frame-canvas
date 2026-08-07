@@ -445,10 +445,10 @@ function exportPng() {
           files: [file],
           title: "双图拼接画布",
         })
+        .then(() => clearImages())
         .catch((error) => {
           if (error.name !== "AbortError") downloadPng(dataUrl, spec.fileName);
-        })
-        .finally(() => clearImages());
+        });
       return;
     }
 
