@@ -390,6 +390,13 @@ function downloadPng(dataUrl, fileName) {
   showToast("无损 PNG 已开始下载");
 }
 
+function isTouchDevice() {
+  return (
+    /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ||
+    (navigator.maxTouchPoints > 0 && window.innerWidth < 1024)
+  );
+}
+
 function exportPng() {
   try {
     const spec = getExportSpec(editor.canvasWidth, CANVAS_HEIGHT);
@@ -401,10 +408,16 @@ function exportPng() {
     drawCanvas(exportContext, false);
 
     const dataUrl = exportCanvas.toDataURL(spec.mimeType);
+
+    // 桌面端：直接触发浏览器下载
+    if (!isTouchDevice()) {
+      downloadPng(dataUrl, spec.fileName);
+      return;
+    }
+
+    // 移动端：使用系统分享面板保存到图库
     const { mimeType, bytes } = decodeDataUrl(dataUrl);
-    const file = new File([bytes], spec.fileName, {
-      type: mimeType,
-    });
+    const file = new File([bytes], spec.fileName, { type: mimeType });
 
     if (navigator.canShare?.({ files: [file] })) {
       showToast("正在打开系统保存面板…");
