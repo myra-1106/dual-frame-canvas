@@ -397,6 +397,10 @@ function downloadPng(dataUrl, fileName) {
 }
 
 function isTouchDevice() {
+  // macOS 桌面端明确排除，避免触控板误判
+  if (/Macintosh/i.test(navigator.userAgent) && !/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+    return false;
+  }
   return (
     /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ||
     (navigator.maxTouchPoints > 0 && window.innerWidth < 1024)
