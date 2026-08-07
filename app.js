@@ -465,7 +465,16 @@ dropZones.forEach((zone, index) => {
 
 fileInputs.forEach((input, index) => {
   input.addEventListener("change", () => {
-    loadFile(index, input.files[0]);
+    const files = Array.from(input.files);
+    if (files.length === 0) return;
+    // 多张时：第一张填当前槽，第二张填另一个槽
+    loadFile(index, files[0]);
+    if (files.length >= 2) {
+      loadFile(1 - index, files[1]);
+    }
+    if (files.length > 2) {
+      showToast(`已加载前 2 张（共选了 ${files.length} 张）`);
+    }
     input.value = "";
   });
 });
