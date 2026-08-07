@@ -546,7 +546,7 @@ input:disabled {
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 .tab-content { display: none; }
-.tab-content.active { display: contents; }
+.tab-content.active { display: block; }
 
 /* PIXEL SCALE resizer */
 .rz-upload-zone {
