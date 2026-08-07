@@ -418,9 +418,8 @@
           var target = tab.dataset.tab;
           tabs.forEach(function (t) { t.classList.remove("active"); });
           tab.classList.add("active");
-          contents.forEach(function (c) {
-            c.style.display = c.id === "tab-" + target ? "" : "none";
-          });
+          contents.forEach(function (c) { c.classList.remove("active"); });
+          document.getElementById("tab-" + target).classList.add("active");
         });
       });
     })();
